@@ -13,32 +13,29 @@ canvas{background:#fff;width:98vw;max-width:1000px;aspect-ratio:1;border:3px sol
 .buy{background:#00c853;color:#fff}.pay{background:#6200ea;color:#fff}
 .step{display:none}.step.active{display:block}
 input{width:90%;padding:11px;border:1px solid #ccc;border-radius:8px;margin-top:8px}
-.wait{animation:pulse 1s infinite}
-@keyframes pulse{0%{opacity:1}50%{opacity:.5}100%{opacity:1}}
 </style>
 </head>
 <body>
-<div id="top">1,000,000 DOTS WALL - BUY 1 DOT FOR ₹1</div>
+<div id="top">1,000,000 DOTS WALL - BUY 1 DOT FOR ₹100</div>
 <canvas id="wall" width="1000" height="1000"></canvas>
 
 <div id="modal">
   <div id="box">
     <div id="step1" class="step active">
-      <h3>Buy This Dot - ₹1</h3>
+      <h3>Block <span id="blk">20,20</span> - 100 Rs</h3>
       <input id="name" placeholder="Your Name / Brand">
       <input id="link" placeholder="Your Link (Insta/Website)">
       <input id="color" type="color" value="#ff0000">
-      <button class="btn buy" onclick="goStep2()">Continue ₹1</button>
+      <button class="btn buy" onclick="goStep2()">Continue - 100 Rs</button>
       <button class="btn" style="background:#ddd" onclick="closeModal()">Cancel</button>
     </div>
     
     <div id="step2" class="step">
-      <h3>Pay ₹1 to Confirm</h3>
-      <p>UPI: <b>dk8811pvt@ptyes</b></p>
-      <p style="font-size:13px">Pay from any UPI App (PhonePe, GPay, Paytm)</p>
-      <button class="btn pay" onclick="payNow()">Pay ₹1 Now</button>
-      <a id="upilink" href="" style="display:none">Pay</a>
-      <p style="font-size:12px;margin-top:10px">After payment, send screenshot on Insta @rock_khalidh_bhai</p>
+      <h3>STEP 1: UPI Pay Karo (100 Rs)</h3>
+      <img id="qr" src="" style="width:250px;margin:10px auto;display:block"/>
+      <p><b>UPI: dk8811pvt@ptyes</b><br>Block: <span id="blk2">20,20</span></p>
+      <button class="btn pay" onclick="payNow()">📱 PhonePe/GPay Se Pay Karo - 100 Rs</button>
+      <p style="font-size:11px;margin-top:8px">Pay ke baad screenshot @rock_khalidh_bhai pe bhejo</p>
       <button class="btn" style="background:#ddd" onclick="closeModal()">Close</button>
     </div>
   </div>
@@ -47,11 +44,12 @@ input{width:90%;padding:11px;border:1px solid #ccc;border-radius:8px;margin-top:
 <script>
 const canvas = document.getElementById('wall');
 const ctx = canvas.getContext('2d');
-let selectedX=0, selectedY=0;
+let selectedX=20, selectedY=20;
 
-// NEW PRIVATE UPI - NO PHONE NUMBER VISIBLE
+// NAYI PRIVATE UPI + 100 RS FIX
 const MY_UPI = "dk8811pvt@ptyes";
 const MY_NAME = "DotWall";
+const AMOUNT = 100;
 
 ctx.fillStyle="#ffffff";
 ctx.fillRect(0,0,1000,1000);
@@ -72,6 +70,8 @@ canvas.addEventListener('click', (e)=>{
   const y = (e.clientY - rect.top) * (1000 / rect.height);
   selectedX = Math.floor(x/10)*10;
   selectedY = Math.floor(y/10)*10;
+  document.getElementById('blk').innerText = selectedX+","+selectedY;
+  document.getElementById('blk2').innerText = selectedX+","+selectedY;
   document.getElementById('modal').style.display='flex';
   document.getElementById('step1').classList.add('active');
   document.getElementById('step2').classList.remove('active');
@@ -81,16 +81,18 @@ function closeModal(){ document.getElementById('modal').style.display='none'; }
 
 function goStep2(){
   if(document.getElementById('name').value.trim()==""){ alert("Name likh de bhai"); return; }
+  const note = `DotWall Block ${selectedX},${selectedY}`;
+  const upiData = `upi://pay?pa=${MY_UPI}&pn=${MY_NAME}&am=${AMOUNT}&cu=INR&tn=${encodeURIComponent(note)}`;
+  const qrLink = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(upiData)}`;
+  document.getElementById('qr').src = qrLink;
+  
   document.getElementById('step1').classList.remove('active');
   document.getElementById('step2').classList.add('active');
 }
 
 function payNow(){
-  const amount = 1;
-  const note = "DotWall dot buy - "+selectedX+","+selectedY;
-  // This is the main payment link - using NEW private UPI
-  const upiLink = `upi://pay?pa=${MY_UPI}&pn=${MY_NAME}&am=${amount}&cu=INR&tn=${encodeURIComponent(note)}`;
-  document.getElementById('upilink').href = upiLink;
+  const note = `DotWall Block ${selectedX},${selectedY}`;
+  const upiLink = `upi://pay?pa=${MY_UPI}&pn=${MY_NAME}&am=${AMOUNT}&cu=INR&tn=${encodeURIComponent(note)}`;
   window.location.href = upiLink;
 }
 </script>
