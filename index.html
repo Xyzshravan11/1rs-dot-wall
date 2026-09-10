@@ -13,144 +13,86 @@ canvas{background:#fff;width:98vw;max-width:1000px;aspect-ratio:1;border:3px sol
 .buy{background:#00c853;color:#fff}.pay{background:#6200ea;color:#fff}
 .step{display:none}.step.active{display:block}
 input{width:90%;padding:11px;border:1px solid #ccc;border-radius:8px;margin-top:8px}
-.wait{animation:blink 1s infinite}@keyframes blink{50%{opacity:.4}}
+.wait{animation:pulse 1s infinite}
+@keyframes pulse{0%{opacity:1}50%{opacity:.5}100%{opacity:1}}
 </style>
 </head>
 <body>
-<div id="top">🇮🇳 1,000,000 DOTS WALL - 1Rs = 1 DOT</div>
-<p>Bika: <b id="sold">0</b> | Khali: <b id="left">1000000</b></p>
-<canvas id="c" width="1000" height="1000"></canvas>
+<div id="top">1,000,000 DOTS WALL - BUY 1 DOT FOR ₹1</div>
+<canvas id="wall" width="1000" height="1000"></canvas>
 
-<div id="modal"><div id="box">
-<h3 id="btitle"></h3>
-
-<!-- STEP 1 -->
-<div id="s1" class="step active">
-<b>STEP 1: UPI Pay Karo (100 Rs)</b><br><br>
-<img id="qr" style="width:220px;border:4px solid #000"><br><br>
-<b>UPI: 7465825994@ptyes</b><br>
-<small id="blockInfo"></small><br><br>
-<button class="btn pay" onclick="openUPI()">📱 PhonePe/GPay Se Pay Karo</button>
-<button class="btn buy" onclick="showStep(2)">✅ Pay Kar Diya Hai</button>
+<div id="modal">
+  <div id="box">
+    <div id="step1" class="step active">
+      <h3>Buy This Dot - ₹1</h3>
+      <input id="name" placeholder="Your Name / Brand">
+      <input id="link" placeholder="Your Link (Insta/Website)">
+      <input id="color" type="color" value="#ff0000">
+      <button class="btn buy" onclick="goStep2()">Continue ₹1</button>
+      <button class="btn" style="background:#ddd" onclick="closeModal()">Cancel</button>
+    </div>
+    
+    <div id="step2" class="step">
+      <h3>Pay ₹1 to Confirm</h3>
+      <p>UPI: <b>dk8811pvt@ptyes</b></p>
+      <p style="font-size:13px">Pay from any UPI App (PhonePe, GPay, Paytm)</p>
+      <button class="btn pay" onclick="payNow()">Pay ₹1 Now</button>
+      <a id="upilink" href="" style="display:none">Pay</a>
+      <p style="font-size:12px;margin-top:10px">After payment, send screenshot on Insta @rock_khalidh_bhai</p>
+      <button class="btn" style="background:#ddd" onclick="closeModal()">Close</button>
+    </div>
+  </div>
 </div>
-
-<!-- STEP 2 -->
-<div id="s2" class="step">
-<b>STEP 2: Payment Proof Upload Karo</b><br>
-<p style="font-size:12px">Payment Successful wala Screenshot + UTR</p>
-<input type="file" id="paySS" accept="image/*"><br>
-<img id="payPreview" style="width:100%;display:none;margin-top:10px;border:2px solid green;border-radius:8px"><br>
-<input type="text" id="txn" placeholder="UTR / Transaction ID (12 digit)"><br>
-<button class="btn buy" onclick="sendToAdmin()">📤 Upload & Admin Ko Bhejo</button>
-</div>
-
-<!-- STEP 3 -->
-<div id="s3" class="step">
-<b class="wait">⏳ Verification Ho Raha Hai...</b><br><br>
-<p style="font-size:13px">Tumhara Screenshot + UTR Admin (Khalid Bhai) ke WhatsApp <b>7465825994</b> pe bhej diya gaya hai.<br><br>1 se 5 minute wait karo.<br>Admin check karke WhatsApp pe Approval Code dega.</p>
-<div style="background:#f0f0f0;padding:10px;border-radius:8px;margin:10px 0">
-<small>Request ID: <b id="reqId"></b></small><br>
-<small>UTR: <b id="showTxn"></b></small>
-</div>
-<input type="text" id="approvalCode" placeholder="Admin ne jo Code diya wo dalo"><br>
-<button class="btn buy" onclick="checkApproval()">🔓 Code Check Karo & Logo Upload Karo</button>
-<button class="btn pay" onclick="openAdminWA()">📱 Fir se WhatsApp Karo Admin Ko</button>
-</div>
-
-<!-- STEP 4 -->
-<div id="s4" class="step">
-<b style="color:green">✅ Payment Confirmed! Ab Logo Lagao</b><br><br>
-<input type="file" id="logo" accept="image/*"><br><br>
-<button class="btn buy" onclick="finalBook()">🚀 Wall Par Final Lagao</button>
-</div>
-
-<button class="btn" style="background:#eee" onclick="modal.style.display='none'">Cancel</button>
-</div></div>
 
 <script>
-const UPI_ID="7465825994@ptyes", UPI_NAME="Khalid Bhai", AMOUNT="100";
-const ADMIN_WA="917465825994";
-const c=document.getElementById('c'), ctx=c.getContext('2d');
-let dots=JSON.parse(localStorage.getItem('wall_final')||'{}');
-let pending=JSON.parse(localStorage.getItem('pending_wall')||'{}');
-let selX=0,selY=0,curUPI="",curReqId="",curCode="";
+const canvas = document.getElementById('wall');
+const ctx = canvas.getContext('2d');
+let selectedX=0, selectedY=0;
 
-function draw(){
- ctx.fillStyle='#fff';ctx.fillRect(0,0,1000,1000);
- for(let k in dots){let [x,y]=k.split(',').map(Number);let im=new Image();im.src=dots[k].logo;im.onload=()=>ctx.drawImage(im,x*10,y*10,10,10);if(im.complete)ctx.drawImage(im,x*10,y*10,10,10);}
- document.getElementById('sold').innerText=Object.keys(dots).length*100;
- document.getElementById('left').innerText=1000000-Object.keys(dots).length*100;
+// NEW PRIVATE UPI - NO PHONE NUMBER VISIBLE
+const MY_UPI = "dk8811pvt@ptyes";
+const MY_NAME = "DotWall";
+
+ctx.fillStyle="#ffffff";
+ctx.fillRect(0,0,1000,1000);
+drawGrid();
+
+function drawGrid(){
+  ctx.strokeStyle="#eeeeee";
+  ctx.lineWidth=0.5;
+  for(let i=0;i<=1000;i+=10){
+    ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,1000); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(1000,i); ctx.stroke();
+  }
 }
-c.addEventListener('click',e=>{
- let r=c.getBoundingClientRect();
- let x=Math.floor((e.clientX-r.left)/r.width*100), y=Math.floor((e.clientY-r.top)/r.height*100);
- selX=x;selY=y;
- if(dots[x+','+y]){alert('Ye block bik chuka hai!');return;}
- document.getElementById('btitle').innerText='Block '+x+','+y+' - 100 Rs';
- document.getElementById('blockInfo').innerText='Block: '+x+','+y;
- curUPI=`upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(UPI_NAME)}&am=${AMOUNT}&cu=INR&tn=DOTWALL-${x}-${y}`;
- document.getElementById('qr').src=`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(curUPI)}`;
- showStep(1); document.getElementById('modal').style.display='flex';
+
+canvas.addEventListener('click', (e)=>{
+  const rect = canvas.getBoundingClientRect();
+  const x = (e.clientX - rect.left) * (1000 / rect.width);
+  const y = (e.clientY - rect.top) * (1000 / rect.height);
+  selectedX = Math.floor(x/10)*10;
+  selectedY = Math.floor(y/10)*10;
+  document.getElementById('modal').style.display='flex';
+  document.getElementById('step1').classList.add('active');
+  document.getElementById('step2').classList.remove('active');
 });
-function openUPI(){window.location.href=curUPI;}
-function showStep(n){document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));document.getElementById('s'+n).classList.add('active');}
-document.getElementById('paySS').addEventListener('change',e=>{
- let f=e.target.files[0]; if(!f) return;
- let r=new FileReader(); r.onload=()=>{document.getElementById('payPreview').src=r.result;document.getElementById('payPreview').style.display='block';}; r.readAsDataURL(f);
-});
 
-function sendToAdmin(){
- let f=document.getElementById('paySS').files[0];
- let txn=document.getElementById('txn').value.trim();
- if(!f){alert('Payment Screenshot dalo');return;}
- if(!txn || txn.length<8){alert('Sahi UTR / Transaction ID dalo (min 8 digit)');return;}
- curReqId='REQ'+Date.now().toString().slice(-6);
- curCode=Math.floor(1000+Math.random()*9000).toString();
- document.getElementById('reqId').innerText=curReqId;
- document.getElementById('showTxn').innerText=txn;
+function closeModal(){ document.getElementById('modal').style.display='none'; }
 
- // Pending me save
- let r=new FileReader();
- r.onload=()=>{
-   pending[curReqId]={x:selX,y:selY,txn:txn,paySS:r.result,code:curCode,time:Date.now()};
-   localStorage.setItem('pending_wall',JSON.stringify(pending));
-   // WhatsApp pe bhejo
-   let msg=`*NEW PAYMENT REQUEST*%0A%0ABlock: ${selX},${selY}%0ARequest ID: ${curReqId}%0AUTR: ${txn}%0AAmount: 100 Rs%0A%0AScreenshot user ke paas hai, usse WhatsApp pe mang lo.%0A%0A*Approval Code jo user ko dena hai: ${curCode}*%0A%0AUser ko bolna: Ye code website pe dale.`;
-   window.open(`https://wa.me/${ADMIN_WA}?text=${msg}`,'_blank');
-   showStep(3);
- };
- r.readAsDataURL(f);
+function goStep2(){
+  if(document.getElementById('name').value.trim()==""){ alert("Name likh de bhai"); return; }
+  document.getElementById('step1').classList.remove('active');
+  document.getElementById('step2').classList.add('active');
 }
-function openAdminWA(){
- let txn=document.getElementById('txn').value;
- let msg=`Payment Check Karo%0ABlock ${selX},${selY} - UTR ${txn} - Req ${curReqId}`;
- window.open(`https://wa.me/${ADMIN_WA}?text=${msg}`,'_blank');
+
+function payNow(){
+  const amount = 1;
+  const note = "DotWall dot buy - "+selectedX+","+selectedY;
+  // This is the main payment link - using NEW private UPI
+  const upiLink = `upi://pay?pa=${MY_UPI}&pn=${MY_NAME}&am=${amount}&cu=INR&tn=${encodeURIComponent(note)}`;
+  document.getElementById('upilink').href = upiLink;
+  window.location.href = upiLink;
 }
-function checkApproval(){
- let entered=document.getElementById('approvalCode').value.trim();
- if(entered===curCode || entered.toLowerCase()==='ok' || entered.toLowerCase()==='approved'){
-   showStep(4);
- } else {
-   alert('Galat Code! Admin se WhatsApp pe sahi Approval Code lo. Admin ne Code: '+curCode+' diya hoga.');
- }
-}
-function finalBook(){
- let f=document.getElementById('logo').files[0];
- if(!f){alert('Logo chuno');return;}
- let r=new FileReader();
- r.onload=()=>{
-   dots[selX+','+selY]={logo:r.result,txn:document.getElementById('txn').value,time:Date.now()};
-   localStorage.setItem('wall_final',JSON.stringify(dots));
-   delete pending[curReqId]; localStorage.setItem('pending_wall',JSON.stringify(pending));
-   document.getElementById('modal').style.display='none';
-   document.getElementById('paySS').value='';document.getElementById('logo').value='';document.getElementById('txn').value='';document.getElementById('approvalCode').value='';
-   document.getElementById('payPreview').style.display='none';
-   draw();
-   alert('🔥 Logo Wall Par Lag Gaya!');
- };
- r.readAsDataURL(f);
-}
-draw();
 </script>
 </body>
 </html>
