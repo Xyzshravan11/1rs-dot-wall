@@ -1,36 +1,82 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>1M Dots Wall - 1Rs</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>1,000,000 DOTS WALL</title>
 <style>
 body{margin:0;background:#080808;color:#fff;font-family:system-ui;text-align:center}
-#top{background:#ffe600;color:#000;padding:12px;font-weight:900;font-size:18px;position:sticky;top:0}
-canvas{background:#fff;width:98vw;max-width:1000px;aspect-ratio:1/1;border:3px solid #333;cursor:crosshair}
-#modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);align-items:center;justify-content:center;z-index:99;padding:15px}
-#box{background:#fff;color:#000;padding:20px;border-radius:16px;max-width:360px;width:100%}
-.btn{width:100%;padding:12px;border:none;border-radius:10px;font-weight:800;margin-top:10px}
-.buy{background:#00c853;color:#fff}
+#top{background:#ffe600;color:#000;padding:12px;font-weight:900;font-size:18px}
+canvas{background:#fff;width:98vw;max-width:1000px;aspect-ratio:1/1;border:3px solid #fff;margin:10px auto;display:block;cursor:crosshair}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;z-index:999}
+#box{background:#fff;color:#000;padding:20px;border-radius:16px;max-width:320px;width:92%}
+.btn{width:100%;padding:12px;border:none;border-radius:10px;font-weight:bold;margin-top:10px;cursor:pointer}
+.buy{background:#00c853;color:#fff;font-size:16px}
 </style>
 </head>
 <body>
 <div id="top">🇮🇳 1,000,000 DOTS - 1 DOT = 1 Rs</div>
-<p>Bika: <b id="sold">0</b> | Khali: <b id="left">1000000</b> | 10x10 Block = 100 Rs</p>
+<p>Bika: <b id="sold">0</b> | Khali: <b id="left">1000000</b> | Price: 100 Dots = 100 Rs</p>
 <canvas id="c" width="1000" height="1000"></canvas>
+
 <div id="modal"><div id="box">
-<h3 id="btitle"></h3>
+<h3 id="btitle">Block Book Karo</h3>
 <input type="file" id="img" accept="image/*"><br><br>
-<img id="qr" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=khalid@upi%26pn=1RsWall%26am=100" width="130"><br>
-<b>UPI: khalid@upi</b><br>100 Rs<br>
-<button class="btn buy" onclick="buyNow()">Payment Done - Book</button>
-<button class="btn" style="background:#eee" onclick="modal.style.display='none'">Cancel</button>
+<img id="qr" src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=upi://pay?pa=7465825994@ptyes%26pn=Khalid%20Bhai%26am=100%26cu=INR%26tn=DotWall" style="width:220px;border:4px solid #000"><br><br>
+<b style="font-size:18px">UPI: 7465825994@ptyes</b><br>
+100 Rs<br><br>
+<button class="btn buy" onclick="buyNow()">Payment Done - Book Karo</button>
+<button class="btn" style="background:#eee;color:#000" onclick="modal.style.display='none'">Cancel</button>
+<p style="font-size:11px;margin-top:10px;color:#666">Pay karne ke baad screenshot WhatsApp karna</p>
 </div></div>
+
 <script>
-const S=1000,B=10;let dots=JSON.parse(localStorage.getItem('1mwall')||'{}'),selKey=null,ctx=c.getContext('2d');
-function draw(){ctx.fillStyle='#fff';ctx.fillRect(0,0,S,S);ctx.strokeStyle='#eee';for(let i=0;i<=S;i+=100){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,S);ctx.stroke();ctx.beginPath();ctx.moveTo(0,i);ctx.lineTo(S,i);ctx.stroke();}for(let k in dots){let im=new Image();im.src=dots[k];let[x,y]=k.split(',').map(Number);im.onload=()=>ctx.drawImage(im,x,y,B,B);if(im.complete)ctx.drawImage(im,x,y,B,B);}sold.innerText=Object.keys(dots).length*100;left.innerText=1000000-Object.keys(dots).length*100;}
-c.addEventListener('click',e=>{let r=c.getBoundingClientRect();let x=Math.floor((e.clientX-r.left)/r.width*S);let y=Math.floor((e.clientY-r.top)/r.height*S);x=Math.floor(x/B)*B;y=Math.floor(y/B)*B;let key=x+','+y;if(dots[key])return alert('Bik chuka!');selKey=key;btitle.innerText='Block '+key;modal.style.display='flex';});
-function buyNow(){let f=img.files[0];if(!f)return alert('Logo chuno');let rd=new FileReader();rd.onload=ev=>{dots[selKey]=ev.target.result;localStorage.setItem('1mwall',JSON.stringify(dots));modal.style.display='none';draw();alert('Booked!');};rd.readAsDataURL(f);}
+// ===== YAHAN UPI CHANGE KARNA HAI AGAR KABHI BADALNA HO =====
+const UPI_ID = "7465825994@ptyes";
+const UPI_NAME = "Khalid Bhai";
+const AMOUNT = "100";
+// ==========================================================
+
+const S=1000,B=10;
+let dots=JSON.parse(localStorage.getItem('1mwall_final')||'{}');
+const c=document.getElementById('c'),ctx=c.getContext('2d');
+let selX=0,selY=0;
+
+function draw(){
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,S,S);
+  ctx.strokeStyle='#eee';for(let i=0;i<=100;i++){ctx.beginPath();ctx.moveTo(i*B,0);ctx.lineTo(i*B,S);ctx.stroke();ctx.beginPath();ctx.moveTo(0,i*B);ctx.lineTo(S,i*B);ctx.stroke();}
+  for(let k in dots){let [x,y]=k.split(',').map(Number);let im=new Image();im.src=dots[k];im.onload=()=>ctx.drawImage(im,x*B,y*B,B,B);if(im.complete)ctx.drawImage(im,x*B,y*B,B,B);}
+  document.getElementById('sold').innerText=Object.keys(dots).length*100;
+  document.getElementById('left').innerText=1000000-Object.keys(dots).length*100;
+}
+
+c.addEventListener('click',e=>{
+  let r=c.getBoundingClientRect();
+  let x=Math.floor((e.clientX-r.left)/r.width*100);
+  let y=Math.floor((e.clientY-r.top)/r.height*100);
+  selX=x;selY=y;
+  let key=x+','+y;
+  if(dots[key]){alert('Ye block bik chuka hai!');return;}
+  document.getElementById('btitle').innerText='Block '+x+','+y+' - 100 Rs';
+  document.getElementById('modal').style.display='flex';
+  // QR update
+  document.getElementById('qr').src=`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=upi://pay?pa=${UPI_ID}%26pn=${encodeURIComponent(UPI_NAME)}%26am=${AMOUNT}%26cu=INR%26tn=DOTWALL-${x}-${y}`;
+});
+
+function buyNow(){
+  let f=document.getElementById('img').files[0];
+  if(!f){alert('Pehle Logo / Image chuno!');return;}
+  let r=new FileReader();
+  r.onload=()=>{
+    dots[selX+','+selY]=r.result;
+    localStorage.setItem('1mwall_final',JSON.stringify(dots));
+    modal.style.display='none';
+    draw();
+    // Payment pe bhejo
+    let upiLink=`upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(UPI_NAME)}&am=${AMOUNT}&cu=INR&tn=DOTWALL-${selX}-${selY}`;
+    window.location.href=upiLink;
+  };
+  r.readAsDataURL(f);
+}
 draw();
 </script>
 </body>
