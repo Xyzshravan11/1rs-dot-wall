@@ -3,204 +3,167 @@
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>1,000,000 DOTS WALL - Pawayan UP</title>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
-/* ===== TERA PURANA DESIGN SAME RAKHA HAI ===== */
-body{margin:0;background:#080808;color:#fff;font-family:system-ui,-apple-system,Segoe UI;text-align:center;overflow-x:hidden}
-#top{background:#ffe600;color:#000;padding:14px;font-weight:900;font-size:16px;letter-spacing:.5px;position:sticky;top:0;z-index:100}
+body{margin:0;background:#080808;color:#fff;font-family:system-ui;text-align:center;overflow-x:hidden}
+#top{background:#ffe600;color:#000;padding:14px;font-weight:900;font-size:16px;position:sticky;top:0;z-index:100}
 canvas{background:#fff;width:98vw;max-width:1000px;aspect-ratio:1;border:3px solid #fff;margin:10px auto;display:block;cursor:crosshair;image-rendering:pixelated;box-shadow:0 0 40px rgba(255,230,0,.2)}
 #info{color:#aaa;font-size:12px;margin:6px}
-#modal{position:fixed;inset:0;background:rgba(0,0,0,.96);display:none;align-items:center;justify-content:center;z-index:999;overflow-y:auto;padding:10px}
-#box{background:#fff;color:#000;padding:22px;border-radius:16px;max-width:380px;width:95%;text-align:left;box-shadow:0 10px 40px rgba(0,0,0,.5)}
-.btn{width:100%;padding:13px;border:none;border-radius:10px;font-weight:bold;margin-top:10px;cursor:pointer;font-size:15px;transition:.2s}
-.btn:active{transform:scale(.97)}
-.buy{background:#00c853;color:#fff}.pay{background:#6200ea;color:#fff}.place{background:#ff3d00;color:#fff}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.96);display:none;align-items:center;justify-content:center;z-index:999;padding:10px}
+#box{background:#fff;color:#000;padding:22px;border-radius:16px;max-width:380px;width:95%;text-align:left}
+input{width:100%;padding:12px;margin:8px 0;border-radius:10px;border:2px solid #ddd;font-size:15px;box-sizing:border-box}
+button{width:100%;padding:14px;border:none;border-radius:12px;font-weight:900;font-size:16px;margin-top:10px;cursor:pointer}
+#qr{background:#f6f6f6;padding:10px;border-radius:12px;text-align:center;margin:10px 0}
 .step{display:none}.step.active{display:block}
-input{width:92%;padding:12px;border:1px solid #ccc;border-radius:8px;margin-top:8px;font-size:14px}
-#preview{width:100%;height:120px;object-fit:contain;background:#f0f0f0;margin-top:8px;display:none;border-radius:8px;border:1px solid #ddd}
-.badge{display:inline-block;background:#000;color:#ffe600;padding:4px 8px;border-radius:6px;font-size:11px;font-weight:800;margin-bottom:8px}
+#preview{width:100px;height:100px;object-fit:cover;border-radius:10px;display:none;margin:5px auto}
 </style>
 </head>
 <body>
-<div id="top">🔥 1,000,000 DOTS WALL - Block ₹100 - UPI: dk8811pvt@ptyes - Pawayan</div>
+<div id="top">1,000,000 DOTS WALL - PAWAYAN UP - 1 DOT = 100 Rs - CLICK TO BUY</div>
 <canvas id="wall" width="1000" height="1000"></canvas>
-<div id="info">1000 x 1000 = 10 Lakh Blocks | 1 Block = 10x10 Pixel | Koi bhi dot pe click karke apna poster lagao | 100 Rs only</div>
+<div id="info">Total: 1,000,000 Dots | <span id="cord">Click karo</span></div>
 
 <div id="modal">
 <div id="box">
-  <!-- STEP 1 -->
-  <div id="s1" class="step active">
-    <span class="badge">STEP 1 / 3</span>
-    <h3 style="margin:4px 0">📍 Block <span id="cord">0,0</span></h3>
-    <p style="font-size:12px;color:#666;margin:4px 0">Ye block abhi khali hai. Apna naam aur poster select karo.</p>
-    <input id="nameInput" placeholder="Tera Naam / Brand / Insta ID" />
-    <input type="file" id="imgInput" accept="image/*" />
-    <img id="preview" />
-    <button class="btn buy" onclick="goPay()">Next → 100 Rs Pay Karo</button>
-    <button class="btn" onclick="closeM()" style="background:#e0e0e0;color:#000">Cancel</button>
-  </div>
+<button onclick="closeM()" style="float:right;width:30px;background:#eee;border-radius:50%">X</button>
 
-  <!-- STEP 2 - PAYMENT + TELEGRAM -->
-  <div id="s2" class="step">
-    <span class="badge">STEP 2 / 3 - PAYMENT VERIFY</span>
-    <h3 style="margin:4px 0">💳 100 Rs Pay Karo</h3>
-    <div style="background:#f7f7ff;border:1px dashed #6200ea;padding:10px;border-radius:10px;font-size:13px">
-      UPI ID: <b>dk8811pvt@ptyes</b><br>
-      Amount: <b>₹100</b><br>
-      Note: Block <span id="cord2"></span>
-    </div>
-    <button class="btn pay" onclick="payUPI()">📱 GPay / PhonePe / Paytm se Pay Karo</button>
+<div id="step1" class="step active">
+<h2>Dot <span id="dotNo"></span></h2>
+<input id="nameInput" placeholder="Apna Naam likho">
+<input type="file" id="imgInput" accept="image/*">
+<img id="preview">
+<p style="font-size:11px;color:#666">Apni photo lagao - Pawayan wall pe hamesha</p>
+<button onclick="goPay()" style="background:#000;color:#ffe600">NEXT - PAYMENT PE JAO</button>
+</div>
 
-    <div style="background:#fff7f0;border:1px solid #ffcc99;padding:10px;border-radius:10px;margin-top:12px">
-      <label style="font-size:12px;font-weight:700">Pay karne ke baad yaha details daal:</label>
-      <input id="utrInput" placeholder="12 Digit UTR Number (GPay History me milega)" />
-      <input type="file" id="ssInput" accept="image/*" />
-      <p style="font-size:11px;color:#888;margin:4px 0">⚠️ Screenshot me UTR aur 100 Rs dikhna chahiye, tabhi approve hoga</p>
-    </div>
-    <button id="verifyBtn" class="btn place" onclick="sendToTelegram()">✅ UTR + Screenshot Telegram Pe Bhejo</button>
-    <button class="btn" onclick="back1()" style="background:#e0e0e0;color:#000">← Back</button>
-  </div>
+<div id="step2" class="step">
+<h2>Payment Karo</h2>
+<div id="qr"><div id="qrcode"></div><div id="upiText" style="font-weight:900;margin-top:5px"></div></div>
+<button onclick="payUPI()" style="background:#00a000;color:#fff">UPI APP SE PAY KARO</button>
+<input id="utrInput" placeholder="12 Digit UTR / Transaction ID">
+<input type="file" id="ssInput" accept="image/*">
+<p style="font-size:11px">UPI Screenshot yaha lagao</p>
+<button id="verifyBtn" onclick="sendToTelegram()" style="background:#000;color:#ffe600">✅ TELEGRAM PE BHEJO & VERIFY KARO</button>
+<button onclick="back1()" style="background:#eee;color:#000">BACK</button>
+</div>
 
-  <!-- STEP 3 -->
-  <div id="s3" class="step">
-    <span class="badge" style="background:#00c853;color:#fff">SENT</span>
-    <h2 style="text-align:center;margin:8px 0">✅ Bhej Diya!</h2>
-    <p style="text-align:center;font-size:14px;line-height:1.4">
-      Tera payment details mere Telegram Bot<br>
-      <b>@dotwall_khalid_100_bot</b> pe pahuch gaya hai.<br><br>
-      Mai 2-5 min me check karke <b>admin.html</b> se approve kar dunga, fir tera poster 1,000,000 wall pe sabko dikhega.
-    </p>
-    <button class="btn" onclick="closeM()" style="background:#000;color:#fff">OK, Wall Dekho</button>
-  </div>
+<div id="step3" class="step">
+<h2 style="text-align:center">⏳ Pending Hai</h2>
+<p style="text-align:center">Tera dot admin approve karega, fir Pawayan wall pe dikhega!</p>
+<button onclick="closeM()" style="background:#000;color:#fff">BAND KARO</button>
+</div>
+
 </div>
 </div>
 
 <script>
-// ================== FINAL CONFIG - TERA SAB LAGA HUA HAI ==================
+// ===== FINAL CONFIG - KHALID BHAI - PAWAYAN =====
 const BOT_TOKEN = "8646960629:AAE_Pdb5hH0QIZdfNZUATH8XgGqu8LaQA50";
 const CHAT_ID = "6052185799";
 const UPI_ID = "dk8811pvt@ptyes";
 const PRICE = 100;
-// ==========================================================================
 
+let selX=0, selY=0, selImgData=null, selName="";
 const canvas = document.getElementById('wall');
 const ctx = canvas.getContext('2d');
-let selX=0, selY=0, selImgData=null, selName="";
 
-// Wall white + light grid
-function drawBase(){
-  ctx.fillStyle="#ffffff"; ctx.fillRect(0,0,1000,1000);
-  ctx.strokeStyle="#f0f0f0"; ctx.lineWidth=0.5;
-  for(let i=0;i<=1000;i+=10){
-    ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,1000); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(1000,i); ctx.stroke();
-  }
-}
-drawBase();
-
-// Load only APPROVED posters - bina approve ke kuch nahi dikhega
 function loadWall(){
-  for(let key in localStorage){
-    if(key.startsWith("APPROVED_")){
-      try{
-        let d = JSON.parse(localStorage.getItem(key));
-        if(!d ||!d.img) continue;
-        let [x,y] = key.replace("APPROVED_","").split("_").map(Number);
-        let img = new Image(); img.src = d.img;
-        img.onload = ()=> { ctx.drawImage(img,x,y,10,10); };
-      }catch(e){}
-    }
-    // Pending walo ko halka grey dikhao taaki pata chale booked hai
-    if(key.startsWith("PENDING_")){
-      try{
-        let [x,y] = key.replace("PENDING_","").split("_").map(Number);
-        ctx.fillStyle="rgba(255,193,7,0.6)"; ctx.fillRect(x,y,10,10);
-      }catch(e){}
-    }
-  }
+ctx.fillStyle="#fff"; ctx.fillRect(0,0,1000,1000);
+ctx.fillStyle="#f0f0f0";
+for(let i=0;i<1000;i+=10){ ctx.fillRect(i,0,1,1000); ctx.fillRect(0,i,1000,1); }
+// Approved aur Pending dikhao
+for(let x=0;x<1000;x++){for(let y=0;y<1000;y++){
+if(localStorage.getItem(`APPROVED_${x}_${y}`)){ctx.fillStyle="#00b300";ctx.fillRect(x,y,2,2);}
+else if(localStorage.getItem(`PENDING_${x}_${y}`)){ctx.fillStyle="rgba(255,193,7,0.6)";ctx.fillRect(x,y,1,1);}
+}}
 }
 loadWall();
 
 // Click on canvas
 canvas.addEventListener('click', (e)=>{
-  const rect = canvas.getBoundingClientRect();
-  const x = Math.floor((e.clientX - rect.left) / rect.width * 1000 / 10) * 10;
-  const y = Math.floor((e.clientY - rect.top) / rect.height * 1000 / 10) * 10;
-
-  // Check if already approved or pending
-  if(localStorage.getItem(`APPROVED_${x}_${y}`)){ alert("Ye block already booked hai bhai, dusra try kar"); return; }
-  if(localStorage.getItem(`PENDING_${x}_${y}`)){ alert("Ye block pending approval me hai, dusra try kar"); return; }
-
-  selX=x; selY=y;
-  document.getElementById('cord').innerText = x+","+y;
-  document.getElementById('cord2').innerText = x+","+y;
-  document.getElementById('modal').style.display="flex";
-  showStep(1);
+const rect = canvas.getBoundingClientRect();
+const x = Math.floor((e.clientX - rect.left)/rect.width*1000);
+const y = Math.floor((e.clientY - rect.top)/rect.height*1000);
+if(localStorage.getItem(`APPROVED_${x}_${y}`)){alert("Ye dot bik gaya hai!");return;}
+if(localStorage.getItem(`PENDING_${x}_${y}`)){alert("Ye pending me hai!");return;}
+selX=x; selY=y;
+document.getElementById('cord').innerText = x+","+y;
+document.getElementById('dotNo').innerText = x+","+y;
+document.getElementById('modal').style.display='flex';
+showStep(1);
+// QR
+document.getElementById('qrcode').innerHTML="";
+document.getElementById('upiText').innerText = UPI_ID;
+new QRCode(document.getElementById("qrcode"), {
+text: `upi://pay?pa=${UPI_ID}&pn=KhalidDotWall&am=${PRICE}&cu=INR&tn=Dot ${x},${y}`,
+width: 160, height: 160
+});
 });
 
-function showStep(n){
-  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
-  document.getElementById('s'+n).classList.add('active');
-}
+function showStep(n){document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));document.getElementById('step'+n).classList.add('active');}
+function closeM(){document.getElementById('modal').style.display='none';}
+function back1(){showStep(1);}
 
 // Image preview
-document.getElementById('imgInput').addEventListener('change', e=>{
-  const file = e.target.files[0]; if(!file) return;
-  if(file.size > 2*1024*1024){ alert("Image 2MB se chota rakho"); return; }
-  const r = new FileReader();
-  r.onload = ev=>{
-    selImgData = ev.target.result;
-    document.getElementById('preview').src = selImgData;
-    document.getElementById('preview').style.display="block";
-  };
-  r.readAsDataURL(file);
+document.getElementById('imgInput').addEventListener('change', (e)=>{
+const file = e.target.files[0]; if(!file) return;
+if(file.size > 2*1024*1024){ alert("Image 2MB se kam rakho"); return; }
+const r = new FileReader();
+r.onload = ev=>{
+selImgData = ev.target.result;
+document.getElementById('preview').src = selImgData;
+document.getElementById('preview').style.display='block';
+};
+r.readAsDataURL(file);
 });
 
 function goPay(){
-  const name = document.getElementById('nameInput').value.trim();
-  if(!name ||!selImgData){ alert("Naam aur Image dono daal bhai"); return; }
-  selName = name;
-  localStorage.setItem('selX', selX); localStorage.setItem('selY', selY);
-  showStep(2);
-}
-function back1(){ showStep(1); }
-function closeM(){ document.getElementById('modal').style.display="none"; }
-function payUPI(){
-  const upiLink = `upi://pay?pa=${UPI_ID}&pn=DotWallKhalid&am=${PRICE}&cu=INR&tn=DotWall Block ${selX},${selY} ${selName}`;
-  window.location.href = upiLink;
-  // Backup: if UPI app not open, show UPI ID
-  setTimeout(()=> alert(`Agar UPI app nahi khula toh manually pay karo:\nUPI: ${UPI_ID}\nAmount: 100 Rs\nNote: ${selX},${selY}`), 1000);
+const name = document.getElementById('nameInput').value.trim();
+if(!name ||!selImgData){ alert("Naam aur Image dono daalo bhai"); return; }
+selName = name;
+localStorage.setItem('selX', selX); localStorage.setItem('selY', selY);
+showStep(2);
 }
 
-// ===== MAIN TELEGRAM FUNCTION - UTR + SS =====
+function payUPI(){
+const upiLink = `upi://pay?pa=${UPI_ID}&pn=Khalid&am=${PRICE}&cu=INR&tn=Dot ${selX},${selY}`;
+window.location.href = upiLink;
+}
+
+// ===== MAIN TELEGRAM FUNCTION - UTR + SS - FINAL FIX =====
 async function sendToTelegram(){
   const utr = document.getElementById('utrInput').value.trim();
-  const file = document.getElementById('ssInput').files[0];
-  if(utr.length < 10){ alert("Sahi 12 digit UTR daal, GPay/PhonePe history me milega"); return; }
-  if(!file){ alert("Payment ka Screenshot daal bhai"); return; }
+  const fileInput = document.getElementById('ssInput');
+  const file = fileInput.files[0];
+
+  if(utr.length < 10){ alert("Sahi 12 digit UTR daalo bhai"); return; }
+  if(!file){ alert("Payment ka Screenshot daalo"); return; }
 
   const btn = document.getElementById('verifyBtn');
-  btn.innerText = "⏳ Telegram pe bhej raha hu..."; btn.disabled=true;
+  btn.innerText = "⏳ Telegram pe bhej raha hu...";
+  btn.disabled = true;
 
   const fd = new FormData();
   fd.append('chat_id', CHAT_ID);
   fd.append('photo', file);
-  fd.append('caption', `💰 NEW PAYMENT - DotWall\n\n📍 Block: ${selX},${selY}\n👤 Name: ${selName}\n🔢 UTR: ${utr}\n💳 UPI: ${UPI_ID}\n💵 Amount: ${PRICE} Rs\n\nAdmin Panel (admin.html) khol ke APPROVE kar de. Tabhi wall pe lagega.`);
+  fd.append('caption', `💰 NEW PAYMENT - Dot Wall Pawayan\n📍 Dot: ${selX},${selY}\n👤 Naam: ${selName}\n🔢 UTR: ${utr}\n💳 UPI: ${UPI_ID}\n⏰ ${new Date().toLocaleString('en-IN')}`);
 
   try{
     const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {method:'POST', body:fd});
     const data = await res.json();
     if(data.ok){
-      localStorage.setItem(`PENDING_${selX}_${selY}`, JSON.stringify({name: selName, utr, img: selImgData, time: Date.now()}));
-      // Redraw pending
-      ctx.fillStyle="rgba(255,193,7,0.6)"; ctx.fillRect(selX,selY,10,10);
+      localStorage.setItem(`PENDING_${selX}_${selY}`, JSON.stringify({name: selName, img: selImgData, utr: utr}));
+      ctx.fillStyle="rgba(255,193,7,0.6)";
+      ctx.fillRect(selX, selY, 1, 1);
       showStep(3);
+      alert("✅ Telegram pe chala gaya! Admin approve karega");
     } else {
-      alert("Telegram Error: "+ (data.description || "Token check kar"));
-      btn.disabled=false; btn.innerText="✅ Fir se Bhejo";
+      alert("Telegram Error: " + data.description + "\nPehle @dotwall_khalid_100_bot pe /start bhejo");
+      btn.disabled=false; btn.innerText="✅ TELEGRAM PE BHEJO & VERIFY KARO";
     }
   }catch(err){
-    alert("Network error hai, net check kar ke fir se try kar");
-    btn.disabled=false; btn.innerText="✅ Fir se Bhejo";
+    alert("Network Error: " + err.message);
+    btn.disabled=false; btn.innerText="✅ TELEGRAM PE BHEJO & VERIFY KARO";
   }
 }
 </script>
