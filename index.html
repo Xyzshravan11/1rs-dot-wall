@@ -143,13 +143,44 @@ async function sendToTelegram(){
   btn.innerText = "⏳ Telegram pe bhej raha hu...";
   btn.disabled = true;
 
+  coconst fd = new FormData();
+fd.append('chat_id', CHAT_ID);
+fd.append('photo', file);
+fd.append('caption', `💰 NEW PAYMENT - Dot Wall Pos: ${selX},${selY} - Rs. ${price}`);
+
+  trytry {// Telegram pe payment bhejo
+try {
   const fd = new FormData();
   fd.append('chat_id', CHAT_ID);
   fd.append('photo', file);
-  fd.append('caption', `💰 NEW PAYMENT - Dot Wall Pawayan\n📍 Dot: ${selX},${selY}\n👤 Naam: ${selName}\n🔢 UTR: ${utr}\n💳 UPI: ${UPI_ID}\n⏰ ${new Date().toLocaleString('en-IN')}`);
+  fd.append('caption', `💰 NEW PAYMENT - Dot Wall\nPos: ${selX},${selY}\nPrice: Rs.${price}`);
 
-  try{
-    const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {method:'POST', body:fd});
+  const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+    method: 'POST',
+    body: fd
+  });
+  
+  const data = await res.json();
+  
+  if(data.ok){
+    localStorage.setItem(`PENDING_${selX}_${selY}`, 'true');
+    ctx.fillStyle="rgba(255,193,7,0.6)";
+    ctx.fillRect(selX, selY, 1, 1);
+    showStep(3);
+    alert("✅ Telegram pe chala gaya! Admin approve karega");
+  } else {
+    alert("Telegram Error: " + data.description);
+    btn.disabled=false; 
+    btn.innerText="✅ TELEGRAM SEND";
+  }
+} catch(err){
+  alert("Network Error: " + err.message);
+  btn.disabled=false; 
+  btn.innerText="✅ TELEGRAM SEND";
+}
+  
+  }
+    
     const data = await res.json();
     if(data.ok){
       localStorage.setItem(`PENDING_${selX}_${selY}`, JSON.stringify({name: selName, img: selImgData, utr: utr}));
