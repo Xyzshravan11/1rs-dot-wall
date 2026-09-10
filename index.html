@@ -5,77 +5,107 @@
 <title>1,000,000 DOTS WALL</title>
 <style>
 body{margin:0;background:#080808;color:#fff;font-family:system-ui;text-align:center}
-#top{background:#ffe600;color:#000;padding:12px;font-weight:900;font-size:18px}
-canvas{background:#fff;width:98vw;max-width:1000px;aspect-ratio:1/1;border:3px solid #fff;margin:10px auto;display:block;cursor:crosshair}
-#modal{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;z-index:999}
-#box{background:#fff;color:#000;padding:20px;border-radius:16px;max-width:320px;width:92%}
-.btn{width:100%;padding:12px;border:none;border-radius:10px;font-weight:bold;margin-top:10px;cursor:pointer}
-.buy{background:#00c853;color:#fff;font-size:16px}
+#top{background:#ffe600;color:#000;padding:12px;font-weight:900}
+canvas{background:#fff;width:98vw;max-width:1000px;aspect-ratio:1;border:3px solid #fff;margin:10px auto;display:block;cursor:crosshair}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.95);display:none;align-items:center;justify-content:center;z-index:999;overflow-y:auto}
+#box{background:#fff;color:#000;padding:20px;border-radius:16px;max-width:340px;width:92%;margin:20px auto}
+.btn{width:100%;padding:13px;border:none;border-radius:10px;font-weight:bold;margin-top:10px;cursor:pointer}
+.buy{background:#00c853;color:#fff}.pay{background:#6200ea;color:#fff}
+.step{display:none}.step.active{display:block}
+input{width:90%;padding:10px;border:1px solid #ccc;border-radius:8px;margin-top:8px}
 </style>
 </head>
 <body>
-<div id="top">🇮🇳 1,000,000 DOTS - 1 DOT = 1 Rs</div>
-<p>Bika: <b id="sold">0</b> | Khali: <b id="left">1000000</b> | Price: 100 Dots = 100 Rs</p>
+<div id="top">🇮🇳 1,000,000 DOTS WALL - 1 DOT = 1 Rs</div>
+<p>Bika: <b id="sold">0</b> | Khali: <b id="left">1000000</b></p>
 <canvas id="c" width="1000" height="1000"></canvas>
 
 <div id="modal"><div id="box">
-<h3 id="btitle">Block Book Karo</h3>
-<input type="file" id="img" accept="image/*"><br><br>
-<img id="qr" src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=upi://pay?pa=7465825994@ptyes%26pn=Khalid%20Bhai%26am=100%26cu=INR%26tn=DotWall" style="width:220px;border:4px solid #000"><br><br>
-<b style="font-size:18px">UPI: 7465825994@ptyes</b><br>
-100 Rs<br><br>
-<button class="btn buy" onclick="buyNow()">Payment Done - Book Karo</button>
-<button class="btn" style="background:#eee;color:#000" onclick="modal.style.display='none'">Cancel</button>
-<p style="font-size:11px;margin-top:10px;color:#666">Pay karne ke baad screenshot WhatsApp karna</p>
+<h3 id="btitle"></h3>
+
+<div id="s1" class="step active">
+<b>STEP 1: UPI Se Pay Karo (100 Rs)</b><br><br>
+<img id="qr" style="width:220px;border:4px solid #000"><br><br>
+<b>UPI: 7465825994@ptyes</b><br><br>
+<button class="btn pay" onclick="openUPI()">📱 PhonePe / GPay Se Pay Karo</button>
+<button class="btn buy" onclick="showStep(2)">✅ Payment Kar Diya - Screenshot Dikhao</button>
+</div>
+
+<div id="s2" class="step">
+<b>STEP 2: Payment Screenshot Upload Karo</b><br>
+<p style="font-size:12px">Jahan "Payment Successful" likha ho wo screenshot</p>
+<input type="file" id="paySS" accept="image/*"><br>
+<img id="payPreview" style="width:100%;display:none;margin-top:10px;border:2px solid green"><br>
+<input type="text" id="txn" placeholder="Transaction ID / UTR (12 digit)"><br>
+<button class="btn buy" onclick="verifyPayment()">✔️ Verify Karo & Logo Upload Karo</button>
+</div>
+
+<div id="s3" class="step">
+<b>STEP 3: Payment Verified! Ab Logo Lagao</b><br>
+<p style="font-size:12px;color:green">✅ Payment Screenshot Mil Gaya</p>
+<input type="file" id="logo" accept="image/*"><br><br>
+<button class="btn buy" onclick="finalBook()">🚀 Wall Par Lagao</button>
+</div>
+
+<button class="btn" style="background:#eee;margin-top:15px" onclick="modal.style.display='none'">Cancel</button>
 </div></div>
 
 <script>
-// ===== YAHAN UPI CHANGE KARNA HAI AGAR KABHI BADALNA HO =====
-const UPI_ID = "7465825994@ptyes";
-const UPI_NAME = "Khalid Bhai";
-const AMOUNT = "100";
-// ==========================================================
-
-const S=1000,B=10;
-let dots=JSON.parse(localStorage.getItem('1mwall_final')||'{}');
-const c=document.getElementById('c'),ctx=c.getContext('2d');
-let selX=0,selY=0;
+const UPI_ID="7465825994@ptyes", UPI_NAME="Khalid Bhai", AMOUNT="100";
+const c=document.getElementById('c'), ctx=c.getContext('2d');
+let dots=JSON.parse(localStorage.getItem('wall_pro')||'{}');
+let selX=0,selY=0,curUPI="";
 
 function draw(){
-  ctx.fillStyle='#fff';ctx.fillRect(0,0,S,S);
-  ctx.strokeStyle='#eee';for(let i=0;i<=100;i++){ctx.beginPath();ctx.moveTo(i*B,0);ctx.lineTo(i*B,S);ctx.stroke();ctx.beginPath();ctx.moveTo(0,i*B);ctx.lineTo(S,i*B);ctx.stroke();}
-  for(let k in dots){let [x,y]=k.split(',').map(Number);let im=new Image();im.src=dots[k];im.onload=()=>ctx.drawImage(im,x*B,y*B,B,B);if(im.complete)ctx.drawImage(im,x*B,y*B,B,B);}
-  document.getElementById('sold').innerText=Object.keys(dots).length*100;
-  document.getElementById('left').innerText=1000000-Object.keys(dots).length*100;
+ ctx.fillStyle='#fff';ctx.fillRect(0,0,1000,1000);
+ for(let k in dots){let [x,y]=k.split(',').map(Number);let im=new Image();im.src=dots[k].logo;im.onload=()=>ctx.drawImage(im,x*10,y*10,10,10);if(im.complete)ctx.drawImage(im,x*10,y*10,10,10);}
+ document.getElementById('sold').innerText=Object.keys(dots).length*100;
+ document.getElementById('left').innerText=1000000-Object.keys(dots).length*100;
 }
-
 c.addEventListener('click',e=>{
-  let r=c.getBoundingClientRect();
-  let x=Math.floor((e.clientX-r.left)/r.width*100);
-  let y=Math.floor((e.clientY-r.top)/r.height*100);
-  selX=x;selY=y;
-  let key=x+','+y;
-  if(dots[key]){alert('Ye block bik chuka hai!');return;}
-  document.getElementById('btitle').innerText='Block '+x+','+y+' - 100 Rs';
-  document.getElementById('modal').style.display='flex';
-  // QR update
-  document.getElementById('qr').src=`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=upi://pay?pa=${UPI_ID}%26pn=${encodeURIComponent(UPI_NAME)}%26am=${AMOUNT}%26cu=INR%26tn=DOTWALL-${x}-${y}`;
+ let r=c.getBoundingClientRect();
+ let x=Math.floor((e.clientX-r.left)/r.width*100), y=Math.floor((e.clientY-r.top)/r.height*100);
+ selX=x;selY=y;
+ if(dots[x+','+y]){alert('Bik chuka hai');return;}
+ document.getElementById('btitle').innerText='Block '+x+','+y+' - 100 Rs';
+ curUPI=`upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(UPI_NAME)}&am=${AMOUNT}&cu=INR&tn=DOTWALL-${x}-${y}`;
+ document.getElementById('qr').src=`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(curUPI)}`;
+ showStep(1); document.getElementById('modal').style.display='flex';
+});
+function openUPI(){window.location.href=curUPI;}
+function showStep(n){document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));document.getElementById('s'+n).classList.add('active');}
+
+document.getElementById('paySS').addEventListener('change',e=>{
+ let f=e.target.files[0]; if(!f) return;
+ let r=new FileReader(); r.onload=()=>{document.getElementById('payPreview').src=r.result;document.getElementById('payPreview').style.display='block';}; r.readAsDataURL(f);
 });
 
-function buyNow(){
-  let f=document.getElementById('img').files[0];
-  if(!f){alert('Pehle Logo / Image chuno!');return;}
-  let r=new FileReader();
-  r.onload=()=>{
-    dots[selX+','+selY]=r.result;
-    localStorage.setItem('1mwall_final',JSON.stringify(dots));
-    modal.style.display='none';
-    draw();
-    // Payment pe bhejo
-    let upiLink=`upi://pay?pa=${UPI_ID}&pn=${encodeURIComponent(UPI_NAME)}&am=${AMOUNT}&cu=INR&tn=DOTWALL-${selX}-${selY}`;
-    window.location.href=upiLink;
-  };
-  r.readAsDataURL(f);
+function verifyPayment(){
+ let f=document.getElementById('paySS').files[0];
+ let txn=document.getElementById('txn').value;
+ if(!f){alert('Pehle Payment ka Screenshot upload karo');return;}
+ if(!txn || txn.length<6){alert('Transaction ID daalo');return;}
+ // Yahan auto AI check nahi hota, isliye hum screenshot dekh ke next step dete hain
+ // Tu baad me is screenshot ko apne WhatsApp pe check kar sakta hai
+ showStep(3);
+}
+
+function finalBook(){
+ let f=document.getElementById('logo').files[0];
+ if(!f){alert('Logo chuno');return;}
+ let r=new FileReader();
+ r.onload=()=>{
+   let paySS=document.getElementById('payPreview').src;
+   let txn=document.getElementById('txn').value;
+   dots[selX+','+selY]={logo:r.result, paySS:paySS, txn:txn, time:Date.now()};
+   localStorage.setItem('wall_pro',JSON.stringify(dots));
+   document.getElementById('modal').style.display='none';
+   document.getElementById('paySS').value='';document.getElementById('logo').value='';document.getElementById('txn').value='';
+   document.getElementById('payPreview').style.display='none';
+   draw();
+   alert('Logo Lag Gaya! Admin payment screenshot check karke approve karega.');
+ };
+ r.readAsDataURL(f);
 }
 draw();
 </script>
